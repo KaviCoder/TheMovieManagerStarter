@@ -27,28 +27,28 @@ class LoginViewController: UIViewController {
     }
     
     @IBAction func loginTapped(_ sender: UIButton) {
-        
+
        
-        TMDBClient.getRequestToken(completion: self.handleRequestTokenResponse(success:error:))
+        TMDBClient.getRequestToken(completion: self.handleRequestTokenResponse(response:error:))
         
         }
     
     
             
-    func handleRequestTokenResponse(success : Bool , error : Error?){
-        if success{
+    func handleRequestTokenResponse(response : Bool , error : Error?){
+        if response{
             print(TMDBClient.Auth.requestToken)
             
             DispatchQueue.main.async {
               
             
-                let body = LoginRequest(username: self.emailTextField.text ?? "", password: self.passwordTextField.text ?? "", request_token: TMDBClient.Auth.requestToken)
-            
-            TMDBClient.authenticateToken(body: body,completion: self.handleLoginResponse(success:error:))
+              let body = LoginRequest(username: self.emailTextField.text ?? "", password: self.passwordTextField.text ?? "", request_token: TMDBClient.Auth.requestToken)
+
+           TMDBClient.authenticateToken(body: body,completion: self.handleLoginResponse(success:error:))
             }
         }
         else{
-            print(error!.localizedDescription)
+            print(error?.localizedDescription)
         }
         
             

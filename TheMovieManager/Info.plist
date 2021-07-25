@@ -25,7 +25,7 @@
 			<string>com.kavyajoshi.TheMovieManager</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>themoviemanger</string>
+				<string>themoviemanager</string>
 			</array>
 		</dict>
 	</array>

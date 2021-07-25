@@ -49,6 +49,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 }
     
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
+        print("App Delegate called")
         //check for right URL by parsing url into its components
         let components = URLComponents(url: url, resolvingAgainstBaseURL: true)
         print("Hello")

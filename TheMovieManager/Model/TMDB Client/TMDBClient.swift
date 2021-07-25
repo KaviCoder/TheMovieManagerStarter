@@ -54,136 +54,142 @@ class TMDBClient {
     }
     
     class func getWatchlist(completion: @escaping ([Movie], Error?) -> Void) {
-        let task = URLSession.shared.dataTask(with: Endpoints.getWatchlist.url) { data, response, error in
-            guard let data = data else {
-                completion([], error)
+        print("getWatchlist")
+        
+        self.taskForGetRequest(url: Endpoints.getWatchlist.url, responseType: MovieResults.self) { response, error in
+            if let response = response{
+                print(response.results)
+                completion(response.results, nil)
                 return
             }
-            let decoder = JSONDecoder()
-            do {
-                let responseObject = try decoder.decode(MovieResults.self, from: data)
-                completion(responseObject.results, nil)
-            } catch {
-                completion([], error)
-            }
+            completion([],error)
         }
-        task.resume()
     }
     
     
     class func getRequestToken(completion: @escaping(Bool, Error?) -> Void)
     {
-        let task = URLSession.shared.dataTask(with: Endpoints.getRequestToken.url) { data, response, error in
-            guard let data = data else {
+        
+        self.taskForGetRequest(url: Endpoints.getRequestToken.url, responseType: RequestTokenResponse.self) { response, error in
+            if let response = response{
                 
-                completion(false,error)
+                TMDBClient.Auth.requestToken = response.request_token
+                
+                completion(true,nil)
                 return
             }
-            
-            let decorder = JSONDecoder()
-            do{
-                let token = try decorder.decode(RequestTokenResponse.self, from: data).request_token
-                self.Auth.requestToken = token
-                completion(true, nil)
-            }
-            catch {
-                completion(false, error)
-                
-            }
-            
-        
+            completion(false,error)
         }
-        task.resume()
+    
     }
     
     //Post request with Body --> Using URLRequuest for this
     class func authenticateToken(body : LoginRequest,completion: @escaping(Bool, Error?) -> Void)
-    { var myRequest = URLRequest(url : Endpoints.authenticateRequestToken.url)
-        myRequest.httpMethod = "POST"
-        myRequest.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        myRequest.httpBody = try! JSONEncoder().encode(body)
-        
-        print(myRequest.httpBody)
-        
-        let task = URLSession.shared.dataTask(with: myRequest) { data, response, error in
-            guard let data = data else {
-                print("Auth token failed")
-                ;completion(false,error)
+    
+    {
+        TMDBClient.taskForPutRequest(url: Endpoints.authenticateRequestToken.url, httpMethod: "POST", body: body, responseType: RequestTokenResponse.self) { res, error in
+            if let res = res{
+                self.Auth.requestToken = TMDBClient.Auth.requestToken
+                completion(true,nil)
                 return
-            }
-            print("**********************")
-            print(data)
-            let decorder = JSONDecoder()
-            do{
-                let token = try decorder.decode(RequestTokenResponse.self, from: data)
-                self.Auth.requestToken = token.request_token
-                completion(true, nil)
-            }
-            catch {
-                print("JSON decoding error")
-                completion(false, error)
-                
-            }
+                }
             
-        
+            completion(false,error)
         }
-        task.resume()
+        
+        
     }
     
      class func sessionIdRequest(completion: @escaping(Bool, Error?) -> Void)
      {
-        var myRequest = URLRequest(url : Endpoints.sessionIdRequest.url)
-           myRequest.httpMethod = "POST"
+        let body = PostSession(request_token: TMDBClient.Auth.requestToken)
+        TMDBClient.taskForPutRequest(url:  Endpoints.sessionIdRequest.url, httpMethod: "POST", body: body, responseType: SessionResponse.self) { res, error in
+            if let res = res{
+                TMDBClient.Auth.sessionId = res.session_id
+                completion(true,nil)
+                return
+                }
+            
+            completion(false,error)
+        }
+     }
+    
+    class func logOutUser(completion: @escaping() -> Void)
+    {  let body = logOutBody(session_id: TMDBClient.Auth.sessionId)
+        self.taskForPutRequest(url:  Endpoints.logOut.url, httpMethod: "DELETE", body: body, responseType: SessionResponse.self){_,_ in 
+             TMDBClient.Auth.sessionId = ""
+                TMDBClient.Auth.requestToken = ""
+                completion()
+               
+        }
+               
+        
+}
+    
+    
+    class func taskForGetRequest<ResponseType:Decodable>(url: URL, responseType : ResponseType.Type, completion: @escaping  ((ResponseType? ,Error?) -> Void ))
+    
+    {
+        let task = URLSession.shared.dataTask(with: url) { data, response, error in
+            guard let data = data else {
+                completion( nil  , error)
+                return
+            }
+            let decoder = JSONDecoder()
+            do {
+               
+                
+                let responseObject = try decoder.decode(ResponseType.self, from: data)
+                DispatchQueue.main.async {
+                completion(responseObject, nil)
+                }
+            } catch {
+                DispatchQueue.main.async {
+                completion(nil, error)
+                }}
+        }
+        task.resume()
+        
+    }
+    
+    //two generics types- RequestType : Encodable
+    //                    ResponseType : Decodable
+    //Parameters: 1)url
+    //            2)httpmethod
+    //            3)body --of type RequestType
+    //            4)responseType ---- of type ResponseType.type
+    class func taskForPutRequest<RequestType : Encodable , ResponseType:Decodable>(url: URL, httpMethod : String ,body : RequestType ,responseType : ResponseType.Type, completion: @escaping  ((ResponseType? ,Error?) -> Void ))
+    {
+        var myRequest = URLRequest(url :url)
+           myRequest.httpMethod = httpMethod
            myRequest.addValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        let body = PostSession(request_token: TMDBClient.Auth.requestToken)
-           myRequest.httpBody = try! JSONEncoder().encode(body)
+      //  let body = PostSession(request_token: TMDBClient.Auth.requestToken)
+        myRequest.httpBody = try! JSONEncoder().encode(body.self)
            
            let task = URLSession.shared.dataTask(with: myRequest) { data, response, error in
                guard let data = data else {
                    print("Session Id failed")
-                   ;completion(false,error)
+                   ;completion(nil,error)
                    return
                }
              
                let decorder = JSONDecoder()
                do{
-                   let res = try decorder.decode(SessionResponse.self, from: data)
-                self.Auth.sessionId = res.session_id
-                   completion(true, nil)
+                   let res = try decorder.decode(ResponseType.self, from: data)
+                DispatchQueue.main.async {
+                completion(res, nil)
+                }
                }
                catch {
-                   print("JSON decoding error while session Id fetching")
-                   completion(false, error)
+                DispatchQueue.main.async {
+                   completion(nil, error)
                    
-               }
+                }}
                
            
            }
            task.resume()
-     }
-    
-    class func logOutUser()
-    {
-        var myRequest = URLRequest(url : Endpoints.logOut.url)
-           myRequest.httpMethod = "DELETE"
-           myRequest.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        
-        let body = logOutBody(session_id: TMDBClient.Auth.sessionId)
-           myRequest.httpBody = try! JSONEncoder().encode(body)
-           
-           let task = URLSession.shared.dataTask(with: myRequest) { data, response, error in
-               guard let _ = data else {
-                   print("Cannot logout with Session Id failed")
-                 
-                   return
-               }
-            //to logout the user
-            Auth.requestToken = ""
-            Auth.sessionId = ""
-            print("Logged out Successfully")
-        
     }
-    
-}
+ 
 }
