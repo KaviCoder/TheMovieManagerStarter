@@ -16,10 +16,10 @@ class WatchlistViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-     
-            
-                self.tableView.reloadData()
-            
+        
+        
+        self.tableView.reloadData()
+        
         
     }
     
@@ -33,7 +33,7 @@ class WatchlistViewController: UIViewController {
         if segue.identifier == "showDetail" {
             let detailVC = segue.destination as! MovieDetailViewController
             detailVC.moviex = MovieModel.watchlist[selectedIndex]
-           
+            
             
         }
     }

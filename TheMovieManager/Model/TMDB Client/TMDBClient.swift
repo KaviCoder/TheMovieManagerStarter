@@ -157,8 +157,13 @@ class TMDBClient {
     {
         let body = MarkWatchlist(media_type: MediaType.movie.rawValue, media_id: mediaID, watchlist: mark)
         TMDBClient.taskForPutRequest(url:  Endpoints.markWatchList.url, httpMethod: "POST", body: body, responseType: MarkResponse.self) { res, error in
-           if let _ = res{
-               completion(true,nil)
+           if let res = res{
+            print(res.status_code)
+            if (res.status_code == 1 || res.status_code == 12 || res.status_code == 13)
+            {
+                completion(true,nil)
+            }
+              
                return
                }
            
@@ -169,8 +174,13 @@ class TMDBClient {
     {
         let body = MarkFavoritelist(media_type: MediaType.movie.rawValue, media_id: mediaID, favorite: mark)
         TMDBClient.taskForPutRequest(url:  Endpoints.markFavorite.url, httpMethod: "POST", body: body, responseType: MarkResponse.self) { res, error in
-           if let _ = res{
-               completion(true,nil)
+           if let res = res{
+            
+            print(res.status_code)
+            if (res.status_code == 1 || res.status_code == 12 || res.status_code == 13)
+            {
+                completion(true,nil)
+            }
                return
                }
            

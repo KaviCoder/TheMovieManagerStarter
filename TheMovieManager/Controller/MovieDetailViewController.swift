@@ -15,9 +15,9 @@ class MovieDetailViewController: UIViewController {
     @IBOutlet weak var favoriteBarButtonItem: UIBarButtonItem!
     
     var moviex: Movie!
-   
     
-
+    
+    
     
     var isWatchlist: Bool {
         return MovieModel.watchlist.contains(moviex)
@@ -31,7 +31,7 @@ class MovieDetailViewController: UIViewController {
         super.viewDidLoad()
         
         navigationItem.title = moviex.title
-       
+        
         imageView.image = UIImage(named: moviex.posterPath! )
         
         toggleBarButton(watchlistBarButtonItem, enabled: isWatchlist)
@@ -40,60 +40,16 @@ class MovieDetailViewController: UIViewController {
     }
     
     @IBAction func watchlistButtonTapped(_ sender: UIBarButtonItem) {
-        print(isWatchlist)
-        //switch
-        toggleBarButton(watchlistBarButtonItem, enabled: !isWatchlist)
-        print(isWatchlist)
-        if isWatchlist == true {
-            //present in list delete it local array first
-            print("delete")
-          
-            MovieModel.watchlist.removeAll { movie in
-                movie.id == moviex.id
-            }
-            changeWatchlist(movie: moviex)
-          
-            print(isWatchlist)
-            
-        }
-        else{
-            //add the movie to watchlist
-            print("add")
-           
-            MovieModel.watchlist.append(moviex)
-            changeWatchlist(movie: moviex)
-            
-        }
         
-        
+        TMDBClient.markWatchListRequest(mediaID: self.moviex.id, mark: !isWatchlist,completion: HandleChangeWatchlistResponse(success:error:))
         
     }
     
     @IBAction func favoriteButtonTapped(_ sender: UIBarButtonItem) {
-        print(isFavorite)
-        toggleBarButton(favoriteBarButtonItem, enabled: !isFavorite)
-        if isFavorite == true {
-            //present in list delete it local array first
-            print("delete")
-            MovieModel.favorites.removeAll { movie in
-                movie.id == moviex.id
-            }
-            ChangeFavorite(movie: moviex)
-          
-            print(isFavorite)
-            
-        }
-        else{
-            //add the movie to favorite
-            print("add")
-           
-            MovieModel.favorites.append(moviex)
-            ChangeFavorite(movie: moviex)
-            
-        }
+        
+        TMDBClient.markFavoriteRequest(mediaID: self.moviex.id, mark: !isFavorite,completion: HandleChangeFavoriteResponse(success:error:))
         
         
-
     }
     
     func toggleBarButton(_ button: UIBarButtonItem, enabled: Bool) {
@@ -104,28 +60,52 @@ class MovieDetailViewController: UIViewController {
         }
     }
     
-    func changeWatchlist(movie :Movie){
-   
-        TMDBClient.markWatchListRequest(mediaID: movie.id, mark: isWatchlist) { res, error in
-            if error == nil {
-                print( "Marking in watch list is successful")
+    func HandleChangeWatchlistResponse(success :Bool, error:Error?){
+        if success
+        {  toggleBarButton(watchlistBarButtonItem, enabled: !isWatchlist)
+            if isWatchlist{
+                //It was present in watchlist and now we removed from the watchlist using API call and we need to take care in the app too
+                MovieModel.watchlist.removeAll { m in
+                    m.id == moviex.id
+                }
             }
+            else{
+                //if the item is not in the watchlist means the user added to watchlist by tapping on the button so added locally to update App UI accordingly.
+                MovieModel.watchlist.append(moviex)
+            }
+            
+        }
+        else{
+            print("cannot change the Watchlist")
+            
+        }
+        
+        
+        
+        
+    }
+    func HandleChangeFavoriteResponse(success :Bool, error:Error?){
+        if success
+        {  toggleBarButton(favoriteBarButtonItem, enabled: !isFavorite)
+            if isFavorite{
+                //It was present in watchlist and now we removed from the watchlist using API call and we need to take care in the app too
+                MovieModel.favorites.removeAll { m in
+                    m.id == moviex.id
+                }
+            }
+            else{
+                //if the item is not in the watchlist means the user added to watchlist by tapping on the button so added locally to update App UI accordingly.
+                MovieModel.favorites.append(moviex)
+            }
+            
+        }
+        else{
+            print("cannot change the Favorite")
+            
         }
         
         
     }
-
-    func ChangeFavorite(movie :Movie){
-        TMDBClient.markFavoriteRequest(mediaID: movie.id, mark: isFavorite) { res, error in
-            if error == nil {
-                print( "Marking in favorite list is successful")
-            }
-        }
-        
-        
-    }
-   
     
-   
     
 }

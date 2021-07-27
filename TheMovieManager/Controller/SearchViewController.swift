@@ -21,9 +21,9 @@ class SearchViewController: UIViewController {
         if segue.identifier == "showDetail" {
             let detailVC = segue.destination as! MovieDetailViewController
             detailVC.moviex = movies[selectedIndex]
-          
+            
             print(movies[selectedIndex])
-           
+            
         }
     }
     
@@ -33,13 +33,13 @@ extension SearchViewController: UISearchBarDelegate {
     
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         if searchText != ""{
-           
+            
             TMDBClient.searchMyMovie(query: searchText){ moviesAll, error in
                 self.movies = moviesAll
                 DispatchQueue.main.async {
-                   self.tableView.reloadData()
+                    self.tableView.reloadData()
                 }
-           }
+            }
         }
         
     }
