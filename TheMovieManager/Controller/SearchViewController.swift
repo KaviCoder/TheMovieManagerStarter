@@ -20,7 +20,10 @@ class SearchViewController: UIViewController {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "showDetail" {
             let detailVC = segue.destination as! MovieDetailViewController
-            detailVC.movie = movies[selectedIndex]
+            detailVC.moviex = movies[selectedIndex]
+          
+            print(movies[selectedIndex])
+           
         }
     }
     
@@ -29,9 +32,17 @@ class SearchViewController: UIViewController {
 extension SearchViewController: UISearchBarDelegate {
     
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        if searchText != ""{
+           
+            TMDBClient.searchMyMovie(query: searchText){ moviesAll, error in
+                self.movies = moviesAll
+                DispatchQueue.main.async {
+                   self.tableView.reloadData()
+                }
+           }
+        }
         
     }
-    
     func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
         searchBar.showsCancelButton = true
     }
@@ -42,6 +53,7 @@ extension SearchViewController: UISearchBarDelegate {
     
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
         searchBar.endEditing(true)
+        searchBar.text = ""
     }
     
 }

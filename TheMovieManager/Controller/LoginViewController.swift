@@ -21,6 +21,7 @@ class LoginViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+      
 //        
 //        emailTextField.text = ""
 //        passwordTextField.text = ""
@@ -48,7 +49,7 @@ class LoginViewController: UIViewController {
             }
         }
         else{
-            print(error?.localizedDescription)
+            print(error!.localizedDescription)
         }
         
             
@@ -76,6 +77,18 @@ class LoginViewController: UIViewController {
         
             DispatchQueue.main.async {
                 print("You are logged in")
+                TMDBClient.getFavoriteList { movies, error in
+                    MovieModel.favorites = movies
+                    print(MovieModel.favorites.count)
+                 
+                }
+                TMDBClient.getWatchlist { movies, error in
+                    MovieModel.watchlist = movies
+                  
+                    print(MovieModel.watchlist.count)
+                }
+               
+             
                
                     self.performSegue(withIdentifier: "completeLogin", sender: nil)
     

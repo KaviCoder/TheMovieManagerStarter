@@ -7,5 +7,11 @@
 //
 
 import Foundation
+struct MarkWatchlist : Codable{
+    let media_type : MediaType.RawValue
+    let media_id: Int
+    let watchlist : Bool
+    
+}
 
 

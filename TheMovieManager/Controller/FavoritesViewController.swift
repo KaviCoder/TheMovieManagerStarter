@@ -16,6 +16,10 @@ class FavoritesViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+      
+                self.tableView.reloadData()
+            
+        
         
     }
     
@@ -28,7 +32,9 @@ class FavoritesViewController: UIViewController {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "showDetail" {
             let detailVC = segue.destination as! MovieDetailViewController
-            detailVC.movie = MovieModel.favorites[selectedIndex]
+            detailVC.moviex = MovieModel.favorites[selectedIndex]
+           
+           
         }
     }
     

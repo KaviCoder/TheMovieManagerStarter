@@ -22,6 +22,7 @@ class TMDBClient {
     enum Endpoints {
         static let base = "https://api.themoviedb.org/3"
         static let apiKeyParam = "?api_key=\(TMDBClient.apiKey)"
+     
         
         case getWatchlist
         case getRequestToken
@@ -29,6 +30,10 @@ class TMDBClient {
         case sessionIdRequest
         case webLogin
         case logOut
+        case getFavoriteList
+        case searchMovie(String)
+        case markWatchList
+        case markFavorite
         
         var stringValue: String {
             switch self {
@@ -44,6 +49,14 @@ class TMDBClient {
                 //themovieManager is the protocol/scheme and authenticate is the path
             
             case .logOut: return Endpoints.base + "/authentication/session" + Endpoints.apiKeyParam
+            case .getFavoriteList: return Endpoints.base + "/account/\(Auth.accountId)/favorite/movies" + Endpoints.apiKeyParam + "&session_id=\(Auth.sessionId)"
+                
+            case .searchMovie(let query) : return Endpoints.base +
+                "/search/movie" + Endpoints.apiKeyParam + "&query=\(query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "" )"
+                
+            case .markWatchList: return  Endpoints.base + "/account/\(Auth.accountId)/watchlist" + Endpoints.apiKeyParam + "&session_id=\(Auth.sessionId)"
+                
+            case .markFavorite: return Endpoints.base + "/account/\(Auth.accountId)/favorite" + Endpoints.apiKeyParam + "&session_id=\(Auth.sessionId)"
             }
             
         }
@@ -53,19 +66,45 @@ class TMDBClient {
         }
     }
     
-    class func getWatchlist(completion: @escaping ([Movie], Error?) -> Void) {
-        print("getWatchlist")
+    
+    class func searchMyMovie(query: String,completion: @escaping ([Movie], Error?) -> Void) {
+        print("Search")
+       
         
-        self.taskForGetRequest(url: Endpoints.getWatchlist.url, responseType: MovieResults.self) { response, error in
+ 
+        self.taskForGetRequest(url: Endpoints.searchMovie(query).url, responseType: MovieResults.self) { response, error in
             if let response = response{
-                print(response.results)
+           
                 completion(response.results, nil)
                 return
             }
             completion([],error)
         }
     }
-    
+    class func getWatchlist(completion: @escaping ([Movie], Error?) -> Void) {
+        print("getWatchlist")
+        
+        self.taskForGetRequest(url: Endpoints.getWatchlist.url, responseType: MovieResults.self) { response, error in
+            if let response = response{
+            
+                completion(response.results, nil)
+                return
+            }
+            completion([],error)
+        }
+    }
+    class func getFavoriteList(completion: @escaping ([Movie], Error?) -> Void) {
+        print("getFavoriteList")
+        
+        self.taskForGetRequest(url: Endpoints.getFavoriteList.url, responseType: MovieResults.self) { response, error in
+            if let response = response{
+               
+                completion(response.results, nil)
+                return
+            }
+            completion([],error)
+        }
+    }
     
     class func getRequestToken(completion: @escaping(Bool, Error?) -> Void)
     {
@@ -89,7 +128,7 @@ class TMDBClient {
     {
         TMDBClient.taskForPutRequest(url: Endpoints.authenticateRequestToken.url, httpMethod: "POST", body: body, responseType: RequestTokenResponse.self) { res, error in
             if let res = res{
-                self.Auth.requestToken = TMDBClient.Auth.requestToken
+                self.Auth.requestToken = res.request_token
                 completion(true,nil)
                 return
                 }
@@ -114,19 +153,44 @@ class TMDBClient {
         }
      }
     
+    class func markWatchListRequest(mediaID : Int, mark: Bool,completion: @escaping(Bool, Error?) -> Void)
+    {
+        let body = MarkWatchlist(media_type: MediaType.movie.rawValue, media_id: mediaID, watchlist: mark)
+        TMDBClient.taskForPutRequest(url:  Endpoints.markWatchList.url, httpMethod: "POST", body: body, responseType: MarkResponse.self) { res, error in
+           if let _ = res{
+               completion(true,nil)
+               return
+               }
+           
+           completion(false,error)
+       }
+    }
+    class func markFavoriteRequest(mediaID : Int, mark: Bool,completion: @escaping(Bool, Error?) -> Void)
+    {
+        let body = MarkFavoritelist(media_type: MediaType.movie.rawValue, media_id: mediaID, favorite: mark)
+        TMDBClient.taskForPutRequest(url:  Endpoints.markFavorite.url, httpMethod: "POST", body: body, responseType: MarkResponse.self) { res, error in
+           if let _ = res{
+               completion(true,nil)
+               return
+               }
+           
+           completion(false,error)
+       }
+    }
+    
+    //Delete Request
     class func logOutUser(completion: @escaping() -> Void)
     {  let body = logOutBody(session_id: TMDBClient.Auth.sessionId)
-        self.taskForPutRequest(url:  Endpoints.logOut.url, httpMethod: "DELETE", body: body, responseType: SessionResponse.self){_,_ in 
+        self.taskForPutRequest(url:  Endpoints.logOut.url, httpMethod: "DELETE", body: body, responseType: LogOutResponse.self){_,_ in
              TMDBClient.Auth.sessionId = ""
                 TMDBClient.Auth.requestToken = ""
                 completion()
-               
-        }
-               
         
+        }
+      
 }
     
-    
+    //MARK:- Get Request
     class func taskForGetRequest<ResponseType:Decodable>(url: URL, responseType : ResponseType.Type, completion: @escaping  ((ResponseType? ,Error?) -> Void ))
     
     {
@@ -151,7 +215,7 @@ class TMDBClient {
         task.resume()
         
     }
-    
+    //MARK:- Put/Delete Request
     //two generics types- RequestType : Encodable
     //                    ResponseType : Decodable
     //Parameters: 1)url

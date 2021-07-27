@@ -8,4 +8,9 @@
 
 import Foundation
 
-
+struct MarkFavoritelist : Codable{
+    let media_type : MediaType.RawValue
+    let media_id: Int
+    let favorite : Bool
+    
+}

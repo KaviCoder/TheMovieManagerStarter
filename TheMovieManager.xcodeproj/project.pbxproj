@@ -35,6 +35,7 @@
 		2316888D2122322D003C820E /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2316888C2122322D003C820E /* Colors.swift */; };
 		2316888F2122646A003C820E /* GradientView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2316888E2122646A003C820E /* GradientView.swift */; };
 		2316889121226AE7003C820E /* LoginTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2316889021226AE7003C820E /* LoginTextField.swift */; };
+		55E80EBC26AE61C500574323 /* LogOutResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55E80EBB26AE61C500574323 /* LogOutResponse.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -68,6 +69,7 @@
 		2316888C2122322D003C820E /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
 		2316888E2122646A003C820E /* GradientView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradientView.swift; sourceTree = "<group>"; };
 		2316889021226AE7003C820E /* LoginTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginTextField.swift; sourceTree = "<group>"; };
+		55E80EBB26AE61C500574323 /* LogOutResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogOutResponse.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -181,6 +183,7 @@
 			isa = PBXGroup;
 			children = (
 				231688742121CB43003C820E /* Movie.swift */,
+				55E80EBB26AE61C500574323 /* LogOutResponse.swift */,
 				231688762121CB50003C820E /* MovieResults.swift */,
 				231688782121CB74003C820E /* RequestTokenResponse.swift */,
 				2316887A2121CB87003C820E /* TMDBResponse.swift */,
@@ -270,6 +273,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				55E80EBC26AE61C500574323 /* LogOutResponse.swift in Sources */,
 				2316884B2121C92C003C820E /* LoginViewController.swift in Sources */,
 				231688732121CB2D003C820E /* MovieModel.swift in Sources */,
 				2316886C2121CAF6003C820E /* TMDBClient.swift in Sources */,

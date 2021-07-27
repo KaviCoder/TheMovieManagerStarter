@@ -8,4 +8,10 @@
 
 import Foundation
 
+struct MarkResponse : Codable
+{
+    let  status_code : Int
+    let  status_message : String
+}
+
 

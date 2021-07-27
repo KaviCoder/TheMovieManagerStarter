@@ -16,13 +16,11 @@ class WatchlistViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        _ = TMDBClient.getWatchlist() { movies, error in
-            MovieModel.watchlist = movies
-            DispatchQueue.main.async {
+     
+            
                 self.tableView.reloadData()
-            }
-        }
+            
+        
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -34,7 +32,9 @@ class WatchlistViewController: UIViewController {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "showDetail" {
             let detailVC = segue.destination as! MovieDetailViewController
-            detailVC.movie = MovieModel.watchlist[selectedIndex]
+            detailVC.moviex = MovieModel.watchlist[selectedIndex]
+           
+            
         }
     }
     
